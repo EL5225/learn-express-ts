@@ -4,8 +4,8 @@ import router from "@/routes";
 import {
   zodErrorHandler,
   notFoundHandler,
-  prismaErrorHandlrer,
   serverErrorHandler,
+  prismaErrorHandlrer,
 } from "@/middlewares";
 import { TPublicResponses } from "@/utilities";
 
@@ -24,8 +24,8 @@ app.get(
 );
 
 app.use("/api", router);
-app.use(zodErrorHandler);
 app.use(prismaErrorHandlrer);
+app.use(zodErrorHandler);
 app.use(notFoundHandler);
 app.use(serverErrorHandler);
 

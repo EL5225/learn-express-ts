@@ -1,13 +1,13 @@
-export type TGenericResponse<T, k> = {
+export type TGenericResponse<T, K> = {
   status: T;
   message: string;
-  data?: k[] | k | null;
+  data?: K[] | K | null;
 };
 
-export type TErrorResponse<T, k> = {
+export type TErrorResponse<T, K> = {
   status: T;
   message: string;
-  error?: k[] | k | null;
+  error?: K[] | K | null;
 };
 
 export type TPublicResponses = TGenericResponse<boolean, null>;

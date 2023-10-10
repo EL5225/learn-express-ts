@@ -104,15 +104,44 @@ export const getUser = async (
     });
 
     if (!user) {
-      return res.status(200).json({
+      return res.status(400).json({
         status: "error",
-        message: `User with id ${id} was not found`,
+        message: `User was not found`,
       });
     }
 
     res.status(200).json({
       status: "success",
       message: "User retrieved",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser = async (
+  req: Request<{ id: string }>,
+  res: Response<TUsersResponse>,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = await prisma.users.delete({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "User deleted",
       data: user,
     });
   } catch (error) {

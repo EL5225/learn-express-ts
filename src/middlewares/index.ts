@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 import { TErrorResponse } from "@/utilities";
 import { TZodErrorResponse } from "./types";
+import { Prisma } from "@prisma/client";
 
 export const prismaErrorHandlrer = (
   err:
@@ -15,11 +15,39 @@ export const prismaErrorHandlrer = (
   res: Response<TErrorResponse<string, string>>,
   next: NextFunction
 ) => {
-  res.status(400).json({
-    status: "error",
-    message: "Bad Request",
-    error: err.message,
-  });
+  if (err instanceof Prisma.PrismaClientInitializationError) {
+    return res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+      error: err?.message,
+    });
+  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    res.status(400).json({
+      status: "error",
+      message: "Bad Request",
+      error: err?.meta?.cause as string,
+    });
+  } else if (err instanceof Prisma.PrismaClientRustPanicError) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+      error: err?.message,
+    });
+  } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+    res.status(400).json({
+      status: "error",
+      message: "Bad Request",
+      error: err?.message,
+    });
+  } else if (err instanceof Prisma.PrismaClientValidationError) {
+    res.status(400).json({
+      status: "error",
+      message: "Bad Request",
+      error: err?.message,
+    });
+  }
+
+  return next(err);
 };
 
 export const zodErrorHandler = (
@@ -28,14 +56,17 @@ export const zodErrorHandler = (
   res: Response<TZodErrorResponse>,
   next: NextFunction
 ) => {
-  res.status(400).json({
-    status: "error",
-    message: "Bad Request",
-    error: {
-      name: `Invalid input on property ${err.issues[0].path[0]}`,
-      detail: err.errors[0].message,
-    },
-  });
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      status: "error",
+      message: "Bad Request",
+      error: {
+        name: `Invalid input on property ${err.issues[0].path[0]}`,
+        detail: err.errors[0].message,
+      },
+    });
+  }
+  next(err);
 };
 
 export const notFoundHandler = (
@@ -55,9 +86,12 @@ export const serverErrorHandler = (
   res: Response<TErrorResponse<string, string>>,
   next: NextFunction
 ) => {
+  const errorMessage = err.message.split("\n");
   res.status(500).json({
     status: "error",
     message: "Internal Server Error",
-    error: err.message,
+    error: errorMessage[errorMessage.length - 1],
   });
+
+  next(err);
 };
