@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import "dotenv/config";
 import router from "@/routes";
 import {
@@ -7,10 +7,21 @@ import {
   prismaErrorHandlrer,
   serverErrorHandler,
 } from "@/middlewares";
+import { TPublicResponses } from "@/utilities";
 
 const app: Express = express();
 const { PORT } = process.env;
 app.use(express.json());
+
+app.get(
+  "/",
+  (req: Request, res: Response<TPublicResponses>, next: NextFunction) => {
+    res.json({
+      status: true,
+      message: "Welcome to API!",
+    });
+  }
+);
 
 app.use("/api", router);
 app.use(zodErrorHandler);

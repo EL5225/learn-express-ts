@@ -1,6 +1,8 @@
-import { Handler, NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Prisma } from "@prisma/client";
-import { z } from "zod";
+import { ZodError } from "zod";
+import { TErrorResponse } from "@/utilities";
+import { TZodErrorResponse } from "./types";
 
 export const prismaErrorHandlrer = (
   err:
@@ -10,7 +12,7 @@ export const prismaErrorHandlrer = (
     | Prisma.PrismaClientUnknownRequestError
     | Prisma.PrismaClientValidationError,
   req: Request,
-  res: Response,
+  res: Response<TErrorResponse<string, string>>,
   next: NextFunction
 ) => {
   res.status(400).json({
@@ -21,9 +23,9 @@ export const prismaErrorHandlrer = (
 };
 
 export const zodErrorHandler = (
-  err: z.ZodError,
+  err: ZodError,
   req: Request,
-  res: Response,
+  res: Response<TZodErrorResponse>,
   next: NextFunction
 ) => {
   res.status(400).json({
@@ -31,14 +33,14 @@ export const zodErrorHandler = (
     message: "Bad Request",
     error: {
       name: `Invalid input on property ${err.issues[0].path[0]}`,
-      message: err.errors[0].message,
+      detail: err.errors[0].message,
     },
   });
 };
 
 export const notFoundHandler = (
   req: Request,
-  res: Response,
+  res: Response<TErrorResponse<string, null>>,
   next: NextFunction
 ) => {
   res.status(404).json({
@@ -50,7 +52,7 @@ export const notFoundHandler = (
 export const serverErrorHandler = (
   err: Error,
   req: Request,
-  res: Response,
+  res: Response<TErrorResponse<string, string>>,
   next: NextFunction
 ) => {
   res.status(500).json({

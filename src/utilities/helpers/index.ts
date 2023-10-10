@@ -1,5 +1,2 @@
-export type TGenericResponse<T, k> = {
-  status: T;
-  message: string;
-  data: k[] | k | null;
-};
+export * from "./types";
+export * from "./query";
